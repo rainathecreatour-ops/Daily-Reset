@@ -11,20 +11,28 @@ export default function AccessPage() {
     setLoading(true);
     setError(null);
 
-    try {
-      const res = await fetch("/api/license", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ licenseKey })
-      });
+   const res = await fetch("/api/license", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ licenseKey })
+});
 
-      const data = await res.json();
+const data = await res.json();
 
-      if (!res.ok || !data?.ok) {
-        setError(data?.error || "Invalid key.");
-        setLoading(false);
-        return;
-      }
+if (!res.ok || !data?.ok) {
+  // show Gumroad’s real message if available
+  const gumMsg =
+    data?.gumroad?.message ||
+    data?.gumroad?.error ||
+    JSON.stringify(data?.gumroad || "");
+
+  setError(gumMsg ? `Gumroad: ${gumMsg}` : (data?.error || "Invalid key."));
+  setLoading(false);
+  return;
+}
+
+window.location.href = "/";
+
 
       window.location.href = "/";
     } catch {
