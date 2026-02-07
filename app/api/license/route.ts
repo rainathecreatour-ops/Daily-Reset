@@ -13,9 +13,14 @@ export async function POST(req: Request) {
     const { licenseKey } = (await req.json()) as { licenseKey?: string };
     const productId = process.env.GUMROAD_PRODUCT_ID;
 
-    if (!productId) {
-      return NextResponse.json({ ok: false, error: "Missing GUMROAD_PRODUCT_ID on server." }, { status: 500 });
-    }
+if (!productId) {
+  return NextResponse.json(
+    { ok: false, error: "Missing GUMROAD_PRODUCT_ID on server." },
+    { status: 500 }
+  );
+}
+
+return NextResponse.json({ ok: false, debug: { productIdUsed: productId } }, { status: 200 });
 
     const key = (licenseKey || "").trim();
     if (key.length < 10) {
