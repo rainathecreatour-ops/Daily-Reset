@@ -3,6 +3,7 @@ import crypto from "crypto";
 
 const VERIFY_URL = "https://api.gumroad.com/v2/licenses/verify";
 
+
 function hmac(value: string) {
   const secret = process.env.APP_SESSION_SECRET || "";
   return crypto.createHmac("sha256", secret).update(value).digest("hex");
