@@ -42,6 +42,9 @@ export async function POST(req: Request) {
     });
 
     const data = await r.json();
+    console.log("GUMROAD RESPONSE:", JSON.stringify(data));
+console.log("PRODUCT_ID_USED:", process.env.GUMROAD_PRODUCT_ID);
+
 
     // ✅ If Gumroad rejects, return the real reason (TEMP for debugging)
     if (!data?.success) {
