@@ -3,7 +3,6 @@ import crypto from "crypto";
 
 const VERIFY_URL = "https://api.gumroad.com/v2/licenses/verify";
 
-
 function hmac(value: string) {
   const secret = process.env.APP_SESSION_SECRET || "";
   return crypto.createHmac("sha256", secret).update(value).digest("hex");
@@ -14,25 +13,27 @@ export async function POST(req: Request) {
     const { licenseKey } = (await req.json()) as { licenseKey?: string };
     const productId = process.env.GUMROAD_PRODUCT_ID;
 
-if (!productId) {
-  return NextResponse.json(
-    { ok: false, error: "Missing GUMROAD_PRODUCT_ID on server." },
-    { status: 500 }
-  );
-}
-
-return NextResponse.json({ ok: false, debug: { productIdUsed: productId } }, { status: 200 });
+    // ✅ If env var missing, return error
+    if (!productId) {
+      return NextResponse.json(
+        { ok: false, error: "Missing GUMROAD_PRODUCT_ID on server." },
+        { status: 500 }
+      );
+    }
 
     const key = (licenseKey || "").trim();
     if (key.length < 10) {
-      return NextResponse.json({ ok: false, error: "Enter a valid Gumroad license key." }, { status: 400 });
+      return NextResponse.json(
+        { ok: false, error: "Enter a valid Gumroad license key." },
+        { status: 400 }
+      );
     }
 
-    // Verify with Gumroad
+    // ✅ Verify with Gumroad (do NOT increment uses while testing)
     const body = new URLSearchParams();
     body.set("product_id", productId);
     body.set("license_key", key);
-    body.set("increment_uses_count", "true");
+    body.set("increment_uses_count", "false");
 
     const r = await fetch(VERIFY_URL, {
       method: "POST",
@@ -42,25 +43,38 @@ return NextResponse.json({ ok: false, debug: { productIdUsed: productId } }, { s
 
     const data = await r.json();
 
+    // ✅ If Gumroad rejects, return the real reason (TEMP for debugging)
     if (!data?.success) {
-      return NextResponse.json({ ok: false, error: "That license key is not valid." }, { status: 401 });
+      return NextResponse.json(
+        { ok: false, error: "Gumroad rejected the key.", gumroad: data, productIdUsed: productId },
+        { status: 401 }
+      );
     }
 
-    // Create a signed session cookie (httpOnly)
+    // ✅ Create session cookie
     const payload = `${productId}:${key}`;
     const token = `${hmac(payload)}.${Date.now()}`;
 
     const res = NextResponse.json({ ok: true });
+
+    // secure cookies only in production (localhost needs secure=false)
+    const isProd =
+      process.env.NODE_ENV === "production" ||
+      process.env.VERCEL_ENV === "production";
+
     res.cookies.set("daily_reset_session", token, {
       httpOnly: true,
       sameSite: "lax",
-      secure: true,
+      secure: isProd,
       path: "/",
-      maxAge: 60 * 60 * 24 * 30 // 30 days
+      maxAge: 60 * 60 * 24 * 30
     });
 
     return res;
-  } catch {
-    return NextResponse.json({ ok: false, error: "Verification failed." }, { status: 500 });
+  } catch (e) {
+    return NextResponse.json(
+      { ok: false, error: "Verification failed.", detail: String(e) },
+      { status: 500 }
+    );
   }
 }
