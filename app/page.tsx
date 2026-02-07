@@ -1,7 +1,8 @@
 "use client";
 
-import AudioPlayer, { type Track } from "@/components/AudioPlayer";
-import DailyPlanner from "@/components/DailyPlanner";
+import AudioPlayer, { type Track } from "../components/AudioPlayer";
+import DailyPlanner from "../components/DailyPlanner";
+
 
 const TRACKS: Track[] = [
   { id: "calm-start", title: "Calm Start", src: "/audio/calm-start.mp3", durationHint: "2–3 min" },
