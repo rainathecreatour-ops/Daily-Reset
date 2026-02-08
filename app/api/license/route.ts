@@ -13,7 +13,6 @@ export async function POST(req: Request) {
     const { licenseKey } = (await req.json()) as { licenseKey?: string };
     const productId = process.env.GUMROAD_PRODUCT_ID;
 
-    // ✅ If env var missing, return error
     if (!productId) {
       return NextResponse.json(
         { ok: false, error: "Missing GUMROAD_PRODUCT_ID on server." },
@@ -24,41 +23,38 @@ export async function POST(req: Request) {
     const key = (licenseKey || "").trim();
     if (key.length < 10) {
       return NextResponse.json(
-        { ok: false, error: "Enter a valid Gumrreturn NextResponse.json(oad license key." },
+        { ok: false, error: "Enter a valid Gumroad license key." },
         { status: 400 }
       );
     }
 
-    // ✅ Verify with Gumroad (do NOT increment uses while testing)
     const body = new URLSearchParams();
-body.set("product_id", productId);          // <-- REQUIRED for your product
-body.set("license_key", key);
-body.set("increment_uses_count", "false");
+    body.set("product_id", productId); // required for your product
+    body.set("license_key", key);
 
+    // keep false while testing; switch to "true" when you’re done testing
+    body.set("increment_uses_count", "false");
 
     const r = await fetch(VERIFY_URL, {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body
+      body,
     });
 
+    const data = await r.json();
 
-
-    // ✅ If Gumroad rejects, return the real reason (TEMP for debugging)
     if (!data?.success) {
       return NextResponse.json(
-        { ok: false, error: "Gumroad rejected the key.", gumroad: data, productIdUsed: productId },
+        { ok: false, error: "That license key is not valid." },
         { status: 401 }
       );
     }
 
-    // ✅ Create session cookie
     const payload = `${productId}:${key}`;
     const token = `${hmac(payload)}.${Date.now()}`;
 
     const res = NextResponse.json({ ok: true });
 
-    // secure cookies only in production (localhost needs secure=false)
     const isProd =
       process.env.NODE_ENV === "production" ||
       process.env.VERCEL_ENV === "production";
@@ -68,13 +64,13 @@ body.set("increment_uses_count", "false");
       sameSite: "lax",
       secure: isProd,
       path: "/",
-      maxAge: 60 * 60 * 24 * 30
+      maxAge: 60 * 60 * 24 * 30, // 30 days
     });
 
     return res;
-  } catch (e) {
+  } catch {
     return NextResponse.json(
-      { ok: false, error: "Verification failed.", detail: String(e) },
+      { ok: false, error: "Verification failed." },
       { status: 500 }
     );
   }
