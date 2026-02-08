@@ -24,16 +24,17 @@ export async function POST(req: Request) {
     const key = (licenseKey || "").trim();
     if (key.length < 10) {
       return NextResponse.json(
-        { ok: false, error: "Enter a valid Gumroad license key." },
+        { ok: false, error: "Enter a valid Gumrreturn NextResponse.json(oad license key." },
         { status: 400 }
       );
     }
 
     // ✅ Verify with Gumroad (do NOT increment uses while testing)
     const body = new URLSearchParams();
-    body.set("product_id", productId);
-    body.set("license_key", key);
-    body.set("increment_uses_count", "false");
+body.set("product_id", productId);
+body.set("license_key", key);
+body.set("increment_uses_count", "false");
+
 
     const r = await fetch(VERIFY_URL, {
       method: "POST",
