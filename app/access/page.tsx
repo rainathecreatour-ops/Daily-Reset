@@ -7,9 +7,40 @@ export default function AccessPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function unlock() {
-    setLoading(true);
-    setError(null);
+  const unlock = async () => {
+  setLoading(true);
+  setError(null);
+
+  const res = await fetch("/api/license", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ licenseKey })
+  });
+
+  const data = await res.json();
+
+  if (!res.ok || !data?.ok) {
+    const gumroadMessage =
+      data?.gumroad?.message ||
+      data?.gumroad?.error ||
+      data?.error ||
+      "License verification failed.";
+
+    setError(`Gumroad: ${gumroadMessage}`);
+    setLoading(false);
+    return;
+  }
+
+  // success
+  window.location.href = "/";
+};
+  {error && (
+  <p style={{ color: "red", marginTop: 8 }}>
+    {error}
+  </p>
+)}
+
+
 
    const res = await fetch("/api/license", {
   method: "POST",
