@@ -42,9 +42,6 @@ body.set("increment_uses_count", "false");
       body
     });
 
-    const data = await r.json();
-    console.log("GUMROAD RESPONSE:", JSON.stringify(data));
-console.log("PRODUCT_ID_USED:", process.env.GUMROAD_PRODUCT_ID);
 
 
     // ✅ If Gumroad rejects, return the real reason (TEMP for debugging)
