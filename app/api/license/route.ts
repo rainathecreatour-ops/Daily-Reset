@@ -31,7 +31,7 @@ export async function POST(req: Request) {
 
     // ✅ Verify with Gumroad (do NOT increment uses while testing)
     const body = new URLSearchParams();
-body.set("product_id", productId);
+body.set("product_id", productId);          // <-- REQUIRED for your product
 body.set("license_key", key);
 body.set("increment_uses_count", "false");
 
