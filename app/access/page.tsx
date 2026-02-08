@@ -8,69 +8,37 @@ export default function AccessPage() {
   const [error, setError] = useState<string | null>(null);
 
   const unlock = async () => {
-  setLoading(true);
-  setError(null);
+    setLoading(true);
+    setError(null);
 
-  const res = await fetch("/api/license", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ licenseKey })
-  });
+    try {
+      const res = await fetch("/api/license", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ licenseKey }),
+      });
 
-  const data = await res.json();
+      const data = await res.json().catch(() => ({}));
 
-  if (!res.ok || !data?.ok) {
-    const gumroadMessage =
-      data?.gumroad?.message ||
-      data?.gumroad?.error ||
-      data?.error ||
-      "License verification failed.";
+      if (!res.ok || !data?.ok) {
+        const gumroadMessage =
+          data?.gumroad?.message ||
+          data?.gumroad?.error ||
+          data?.error ||
+          "License verification failed.";
 
-    setError(`Gumroad: ${gumroadMessage}`);
-    setLoading(false);
-    return;
-  }
+        setError(`Gumroad: ${gumroadMessage}`);
+        setLoading(false);
+        return;
+      }
 
-  // success
-  window.location.href = "/";
-};
-  {error && (
-  <p style={{ color: "red", marginTop: 8 }}>
-    {error}
-  </p>
-)}
-
-
-
-   const res = await fetch("/api/license", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ licenseKey })
-});
-
-const data = await res.json();
-
-if (!res.ok || !data?.ok) {
-  // show Gumroad’s real message if available
-  const gumMsg =
-    data?.gumroad?.message ||
-    data?.gumroad?.error ||
-    JSON.stringify(data?.gumroad || "");
-
-  setError(gumMsg ? `Gumroad: ${gumMsg}` : (data?.error || "Invalid key."));
-  setLoading(false);
-  return;
-}
-
-window.location.href = "/";
-
-
+      // success
       window.location.href = "/";
     } catch {
       setError("Could not verify. Try again.");
       setLoading(false);
     }
-  }
+  };
 
   return (
     <main className="mx-auto max-w-xl px-4 py-14">
@@ -81,8 +49,13 @@ window.location.href = "/";
         </p>
 
         <div className="mt-6 flex flex-col gap-3">
-          <label className="text-sm font-medium">License key</label>
+          <label htmlFor="licenseKey" className="text-sm font-medium">
+            License key
+          </label>
+
           <input
+            id="licenseKey"
+            name="licenseKey"
             value={licenseKey}
             onChange={(e) => setLicenseKey(e.target.value)}
             placeholder="XXXX-XXXX-XXXX-XXXX"
