@@ -55,3 +55,41 @@ export default function Page() {
     </main>
   );
 }
+import AudioUploader from "@/components/AudioUploader";
+
+export default function Home() {
+  return (
+    <main className="mx-auto max-w-xl px-4 py-14 space-y-6">
+      <div className="rounded-2xl border border-[var(--border)] bg-white p-8 shadow-sm">
+        <h1 className="text-2xl font-semibold">Daily Reset</h1>
+
+        {/* Built-in audio */}
+        <div className="mt-6 space-y-4">
+          <div>
+            <p className="font-medium">Morning Reset</p>
+            <audio
+              className="w-full"
+              controls
+              src="/audio/morning-reset.mp3"
+            />
+          </div>
+
+          <div>
+            <p className="font-medium">Night Reset</p>
+            <audio
+              className="w-full"
+              controls
+              src="/audio/night-reset.mp3"
+            />
+          </div>
+        </div>
+
+        {/* User upload */}
+        <div className="mt-8">
+          <AudioUploader />
+        </div>
+      </div>
+    </main>
+  );
+}
+
