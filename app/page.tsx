@@ -1,3 +1,5 @@
+import DailyPlanner from "@/components/DailyPlanner";
+
 export default function Home() {
   return (
     <main style={{ maxWidth: 600, margin: "0 auto", padding: 24 }}>
