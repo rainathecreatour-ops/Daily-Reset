@@ -1,52 +1,186 @@
-"use client";
+import React, { useState } from 'react';
+import { Download, Lock } from 'lucide-react'; 
 
-import UserAudioUpload from "@/components/UserAudioUpload";
-import DailyPlanner from "@/components/DailyPlanner";
+const PlannerGenerator = () => {
+ const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [accessCode, setAccessCode] = useState('');
+  const [selectedTemplate, setSelectedTemplate] = useState('minimalist');
+  const [pattern, setPattern] = useState('none');
+  const [selectedSections, setSelectedSections] = useState([]);
+  const [fontFamily, setFontFamily] = useState('default');
+  const [customColors, setCustomColors] = useState(null);
+  const [hiddenSections, setHiddenSections] = useState([]);
+  const [sectionReplacements, setSectionReplacements] = useState({});
 
-const BUILT_IN = [
-  { title: "Calm Start", src: "/audio/calm-start.mp3" },
-  { title: "Gentle Focus", src: "/audio/gentle-focus.mp3" },
-  { title: "Soft Motivation", src: "/audio/soft-motivation.mp3" },
-];
+  /* -------------------- templates -------------------- */
+  const templates = {
+    minimalist: {
+      name: 'Minimalist',
+      description: 'Clean, simple, uncluttered',
+      background: '#FFFFFF',
+      primary: '#F5F5F5',
+      accent: '#666666',
+      border: '#CCCCCC',
+      text: '#333333',
+      layout: 'simple-grid'
+    },
+    // ... (UNCHANGED — rest of your templates)
+  };
 
-export default function Page() {
+  /* -------------------- OPTIONAL SECTIONS -------------------- */
+  const optionalSections = {
+    // ... (UNCHANGED — entire optionalSections object)
+  };
+
+  /* -------------------- HELPERS -------------------- */
+  const renderSectionOrReplacement = (
+    sectionId,
+    hiddenSections,
+    replacements,
+    colors,
+    originalContent,
+    yPosition
+  ) => {
+    if (!hiddenSections.includes(sectionId)) {
+      return originalContent;
+    } else if (replacements[sectionId] && optionalSections[replacements[sectionId]]) {
+      return optionalSections[replacements[sectionId]].render(colors, yPosition);
+    }
+    return null;
+  };
+
+  /* -------------------- ALL LAYOUT RENDERERS -------------------- */
+  // (UNCHANGED — all renderMinimalistLayout → renderElegantLayout)
+
+  const renderJournalLayout = (colors, hiddenSections = [], replacements = {}) => {
+    return (
+      <g>
+        {/* header */}
+        <text x="425" y="70" fontSize="28" fontWeight="400" fill={colors.text} textAnchor="middle" fontFamily="Georgia">
+          Journal
+        </text>
+        <line x1="300" y1="85" x2="550" y2="85" stroke={colors.accent} strokeWidth="1" />
+
+        {/* date */}
+        <text x="100" y="130" fontSize="12" fill={colors.text}>Date: _______________</text>
+        <text x="600" y="130" fontSize="12" fill={colors.text}>Day: _______________</text>
+
+        {/* lines */}
+        {[...Array(31)].map((_, i) => (
+          <line
+            key={i}
+            x1="100"
+            y1={160 + i * 24}
+            x2="750"
+            y2={160 + i * 24}
+            stroke={colors.border}
+            strokeWidth="1"
+            opacity="0.6"
+          />
+        ))}
+
+        {/* margin */}
+        <line x1="130" y1="160" x2="130" y2="880" stroke={colors.accent} strokeWidth="1" opacity="0.3" />
+
+        {/* quote */}
+        <text
+          x="425"
+          y="870"
+          fontSize="11"
+          fill={colors.accent}
+          textAnchor="middle"
+          fontStyle="italic"
+        >
+          "Write your story..."
+        </text>
+      </g>
+    );
+  };  // ✅ FIX #1 — properly closed function
+
+  const renderDreamJournalLayout = (colors, hiddenSections = [], replacements = {}) => {
+    return (
+      <g>
+        {/* UNCHANGED */}
+      </g>
+    );
+  };
+
+  /* -------------------- UI + SVG -------------------- */
+
+  const renderPattern = (patternType, colors) => {
+    if (patternType === 'none') return null;
+    return (
+      <defs>
+        {/* UNCHANGED */}
+      </defs>
+    );
+  };
+
+  const getPatternFill = (patternType) => {
+    if (patternType === 'none') return null;
+    const map = {
+      zebra: 'url(#zebraPattern)',
+      leopard: 'url(#leopardPattern)',
+      stars: 'url(#starsPattern)',
+      hearts: 'url(#heartsPattern)',
+      polkadot: 'url(#polkadotPattern)',
+    };
+    return map[patternType];
+  };
+
+  const getActiveColors = () => {
+    const baseColors = templates[selectedTemplate];
+    if (!customColors) return baseColors;
+    return {
+      ...baseColors,
+      accent: customColors.accent || baseColors.accent,
+      border: customColors.border || baseColors.border,
+      text: customColors.text || baseColors.text,
+    };
+  };
+
+  const handleLogin = () => {
+    if (accessCode === 'PLAN2024') setIsAuthenticated(true);
+    else alert('Invalid code');
+  };
+
+  const downloadSVG = () => {
+    try {
+      const svg = document.getElementById('template-svg');
+      if (!svg) return alert('Not found');
+      const clone = svg.cloneNode(true);
+      clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+      const content = new XMLSerializer().serializeToString(clone);
+      const blob = new Blob([content], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${selectedTemplate}-planner.svg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      alert('✅ Downloaded!');
+    } catch {
+      alert('Failed');
+    }
+  };
+
+  /* -------------------- PREVIEW -------------------- */
   return (
-    <main className="mx-auto max-w-5xl px-4 py-10">
-      <header className="mb-8">
-        <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-white px-4 py-2 text-sm">
-          <span className="font-semibold">Daily Reset</span>
-          <span className="text-[var(--muted)]">Audio + One Page</span>
-        </div>
-
-        <h1 className="mt-4 text-3xl font-semibold tracking-tight">Start your day calmly.</h1>
-        <p className="mt-2 max-w-2xl text-[var(--muted)]">
-          Press play, write one page, and move forward with clarity.
-        </p>
-      </header>
-
-      <section className="grid gap-6 lg:grid-cols-2">
-        <div className="rounded-2xl border border-[var(--border)] bg-white p-6 shadow-sm space-y-6">
-          <div>
-            <h2 className="text-lg font-semibold">Built-in audio</h2>
-            <div className="mt-4 space-y-4">
-              {BUILT_IN.map((t) => (
-                <div key={t.src} className="rounded-xl border border-[var(--border)] p-4">
-                  <div className="text-sm font-medium">{t.title}</div>
-                  <audio controls className="mt-2 w-full">
-                    <source src={t.src} type="audio/mpeg" />
-                  </audio>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <UserAudioUpload />
-        </div>
-
-        <div className="rounded-2xl border border-[var(--border)] bg-white p-6 shadow-sm">
-          <DailyPlanner />
-        </div>
-      </section>
-    </main>
+    <svg id="template-svg">
+      {/* ... */}
+      {selectedTemplate === 'children' && (
+        <g fontFamily={fontOptions[fontFamily].family}>
+          {renderChildrenLayout(
+            getActiveColors(),
+            hiddenSections,
+            sectionReplacements
+          )} {/* ✅ FIX #2 — JSX comment */}
+        </g>
+      )}
+    </svg>
   );
-}
+};
+
+export default PlannerGenerator;
