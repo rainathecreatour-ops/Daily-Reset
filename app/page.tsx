@@ -1,66 +1,52 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
-
-import AudioPlayer from "@/components/AudioPlayer";
+import UserAudioUpload from "@/components/UserAudioUpload";
 import DailyPlanner from "@/components/DailyPlanner";
-import UserAudioUpload, { type Track } from "@/components/UserAudioUpload";
 
-const DEFAULT_TRACKS: Track[] = [
-  { id: "calm-start", title: "Calm Start", src: "/audio/calm-start.mp3", durationHint: "2–3 min" },
-  { id: "gentle-focus", title: "Gentle Focus", src: "/audio/gentle-focus.mp3", durationHint: "2–3 min" },
-  { id: "soft-motivation", title: "Soft Motivation", src: "/audio/soft-motivation.mp3", durationHint: "2–3 min" }
+const BUILT_IN = [
+  { title: "Calm Start", src: "/audio/calm-start.mp3" },
+  { title: "Gentle Focus", src: "/audio/gentle-focus.mp3" },
+  { title: "Soft Motivation", src: "/audio/soft-motivation.mp3" },
 ];
 
 export default function Page() {
-  const [userTrack, setUserTrack] = useState<Track | null>(null);
-
-  const tracks = useMemo(() => {
-    return userTrack ? [userTrack, ...DEFAULT_TRACKS] : DEFAULT_TRACKS;
-  }, [userTrack]);
-
   return (
     <main className="mx-auto max-w-5xl px-4 py-10">
-      <header className="mb-8 flex items-start justify-between gap-4">
-        <div>
-          <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-white px-4 py-2 text-sm">
-            <span className="font-semibold">Daily Reset</span>
-            <span className="text-[var(--muted)]">Audio + Journal</span>
-          </div>
-
-          <h1 className="mt-4 text-3xl font-semibold tracking-tight">
-            Start your day calmly.
-          </h1>
-          <p className="mt-2 max-w-2xl text-[var(--muted)]">
-            Press play, write one page, and move forward with clarity.
-          </p>
+      <header className="mb-8">
+        <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-white px-4 py-2 text-sm">
+          <span className="font-semibold">Daily Reset</span>
+          <span className="text-[var(--muted)]">Audio + One Page</span>
         </div>
 
-        <button
-          onClick={async () => {
-            await fetch("/api/logout", { method: "POST" });
-            window.location.href = "/access";
-          }}
-          className="rounded-xl border border-[var(--border)] bg-white px-4 py-2 text-sm hover:bg-gray-50"
-        >
-          Log out
-        </button>
+        <h1 className="mt-4 text-3xl font-semibold tracking-tight">Start your day calmly.</h1>
+        <p className="mt-2 max-w-2xl text-[var(--muted)]">
+          Press play, write one page, and move forward with clarity.
+        </p>
       </header>
 
       <section className="grid gap-6 lg:grid-cols-2">
-        <div className="rounded-2xl border border-[var(--border)] bg-white p-6 shadow-sm">
-          <AudioPlayer tracks={tracks as any} />
-          <UserAudioUpload onAddTrack={(t) => setUserTrack(t)} />
+        <div className="rounded-2xl border border-[var(--border)] bg-white p-6 shadow-sm space-y-6">
+          <div>
+            <h2 className="text-lg font-semibold">Built-in audio</h2>
+            <div className="mt-4 space-y-4">
+              {BUILT_IN.map((t) => (
+                <div key={t.src} className="rounded-xl border border-[var(--border)] p-4">
+                  <div className="text-sm font-medium">{t.title}</div>
+                  <audio controls className="mt-2 w-full">
+                    <source src={t.src} type="audio/mpeg" />
+                  </audio>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <UserAudioUpload />
         </div>
 
         <div className="rounded-2xl border border-[var(--border)] bg-white p-6 shadow-sm">
           <DailyPlanner />
         </div>
       </section>
-
-      <footer className="mt-8 text-xs text-[var(--muted)]">
-        Built-in MP3s go in <span className="font-mono">/public/audio</span>.
-      </footer>
     </main>
   );
 }
