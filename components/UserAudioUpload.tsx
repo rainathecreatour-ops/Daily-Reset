@@ -1,9 +1,8 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
-import type { Track } from "./AudioPlayer";
+import React, { useEffect, useState } from "react";
 
-const LS_KEY = "dailyreset_user_track";
+const LS_KEY = "dailyreset_user_audio";
 const MAX_BYTES = 2_000_000; // ~2MB safe limit for localStorage
 
 type Stored = {
@@ -11,16 +10,13 @@ type Stored = {
   dataUrl: string;
 };
 
-export default function UserAudioUpload({
-  onAddTrack,
-}: {
-  onAddTrack: (t: Track) => void;
-}) {
+export default function UserAudioUpload() {
   const [stored, setStored] = useState<Stored | null>(null);
+  const [tempUrl, setTempUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
-  // Load saved audio on mount
+  // Load saved audio (if any)
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -31,45 +27,23 @@ export default function UserAudioUpload({
       const parsed = JSON.parse(raw) as Stored;
       if (parsed?.dataUrl) setStored(parsed);
     } catch {
-      // ignore bad data
+      // ignore
     }
   }, []);
-
-  // Convert stored audio to Track
-  const track: Track | null = useMemo(() => {
-    if (!stored) return null;
-
-    return {
-      id: "user-upload",
-      title: `Your audio: ${stored.name}`,
-      src: stored.dataUrl,
-      durationHint: "your file",
-    };
-  }, [stored]);
-
-  // Send track to parent when it changes
-  useEffect(() => {
-    if (track) onAddTrack(track);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [track?.src]);
 
   function onPick(file: File | null) {
     setMessage(null);
     if (!file) return;
 
-    // Too big for localStorage → play only (temporary)
+    // Always allow immediate play (temporary URL)
+    const url = URL.createObjectURL(file);
+    setTempUrl(url);
+
+    // Too big for localStorage → do not save
     if (file.size > MAX_BYTES) {
       setMessage(
-        "File too large to save. It will play now but won’t persist after refresh."
+        "Playing now ✅ (Too large to save. Keep under ~2MB to persist after refresh.)"
       );
-
-      const tempUrl = URL.createObjectURL(file);
-      onAddTrack({
-        id: "user-upload-temp",
-        title: `Your audio (temp): ${file.name}`,
-        src: tempUrl,
-        durationHint: "temp",
-      });
       return;
     }
 
@@ -103,15 +77,20 @@ export default function UserAudioUpload({
     try {
       localStorage.removeItem(LS_KEY);
     } catch {}
+
     setStored(null);
+    setTempUrl(null);
     setMessage("Cleared ✅");
   }
 
+  // Prefer saved version, otherwise temporary
+  const playSrc = stored?.dataUrl || tempUrl;
+
   return (
-    <div className="mt-4 rounded-xl border border-[var(--border)] bg-white p-4">
+    <div className="mt-6 rounded-xl border border-[var(--border)] bg-white p-4">
       <div className="text-sm font-semibold">Upload your own MP3</div>
       <p className="mt-1 text-xs text-[var(--muted)]">
-        Saved locally on this device (under ~2MB).
+        Plays immediately. Saves only if under ~2MB (localStorage).
       </p>
 
       <div className="mt-3 flex items-center gap-3">
@@ -127,8 +106,7 @@ export default function UserAudioUpload({
         <button
           type="button"
           onClick={clear}
-          disabled={!stored}
-          className="rounded-lg border border-[var(--border)] px-3 py-1.5 text-xs hover:bg-gray-50 disabled:opacity-50"
+          className="rounded-lg border border-[var(--border)] px-3 py-1.5 text-xs hover:bg-gray-50"
         >
           Clear
         </button>
@@ -138,9 +116,14 @@ export default function UserAudioUpload({
         )}
       </div>
 
-      {stored && (
-        <div className="mt-2 text-xs text-[var(--muted)]">
-          Saved: <span className="font-mono">{stored.name}</span>
+      {playSrc && (
+        <div className="mt-4">
+          <div className="text-xs text-[var(--muted)] mb-2">
+            {stored ? `Saved: ${stored.name}` : "Temporary preview"}
+          </div>
+          <audio controls className="w-full">
+            <source src={playSrc} type="audio/mpeg" />
+          </audio>
         </div>
       )}
 
