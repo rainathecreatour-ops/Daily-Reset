@@ -1,7 +1,6 @@
+
 import { NextResponse } from "next/server";
 import crypto from "crypto";
-
-export const runtime = "nodejs"; // ✅ ensures crypto works on Vercel
 
 const VERIFY_URL = "https://api.gumroad.com/v2/licenses/verify";
 
@@ -31,27 +30,27 @@ export async function POST(req: Request) {
     }
 
     const body = new URLSearchParams();
-    body.set("product_id", productId); // ✅ must be the real product_id Gumroad told you
+    body.set("product_id", productId); // required for your product
     body.set("license_key", key);
-    body.set("increment_uses_count", "true");
+
+    // keep false while testing; switch to "true" when you’re done testing
+    body.set("increment_uses_count", "false");
 
     const r = await fetch(VERIFY_URL, {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body,
-      cache: "no-store",
     });
 
     const data = await r.json();
 
     if (!data?.success) {
       return NextResponse.json(
-        { ok: false, error: "That license key is not valid.", gumroad: data },
+        { ok: false, error: "That license key is not valid." },
         { status: 401 }
       );
     }
 
-    // create session cookie
     const payload = `${productId}:${key}`;
     const token = `${hmac(payload)}.${Date.now()}`;
 
@@ -66,7 +65,7 @@ export async function POST(req: Request) {
       sameSite: "lax",
       secure: isProd,
       path: "/",
-      maxAge: 60 * 60 * 24 * 30,
+      maxAge: 60 * 60 * 24 * 30, // 30 days
     });
 
     return res;
