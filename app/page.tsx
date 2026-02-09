@@ -1,7 +1,6 @@
 "use client";
 
 import UserAudioUpload from "../components/UserAudioUpload";
-import DailyPlanner from "../components/DailyPlanner";
 
 const BUILT_IN = [
   { title: "Calm Start", src: "/audio/calm-start.mp3" },
@@ -27,6 +26,7 @@ export default function Page() {
       </header>
 
       <section className="grid gap-6 lg:grid-cols-2">
+        {/* LEFT: Audio */}
         <div className="rounded-2xl border border-[var(--border)] bg-white p-6 shadow-sm space-y-6">
           <div>
             <h2 className="text-lg font-semibold">Built-in audio</h2>
@@ -49,8 +49,17 @@ export default function Page() {
           <UserAudioUpload />
         </div>
 
+        {/* RIGHT: Journal (inline) */}
         <div className="rounded-2xl border border-[var(--border)] bg-white p-6 shadow-sm">
-          <DailyPlanner />
+          <h2 className="text-lg font-semibold">One Page Journal</h2>
+          <p className="mt-1 text-sm text-[var(--muted)]">
+            Write while you listen.
+          </p>
+
+          <textarea
+            placeholder="Start writing here…"
+            className="mt-4 w-full min-h-[320px] rounded-xl border border-[var(--border)] p-3 text-sm outline-none focus:ring-2 focus:ring-black/10"
+          />
         </div>
       </section>
     </main>
