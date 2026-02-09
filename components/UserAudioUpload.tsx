@@ -3,6 +3,14 @@
 import React, { useEffect, useMemo, useState } from "react";
 import type { Track } from "./AudioPlayer";
 
+export type Track = {
+  id: string;
+  title: string;
+  src: string;
+  durationHint?: string;
+};
+
+
 
 const LS_KEY = "dailyreset_user_track";
 const MAX_BYTES = 2_000_000; // ~2MB (safe-ish for localStorage after base64)
