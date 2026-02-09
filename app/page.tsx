@@ -2,12 +2,9 @@
 
 import React, { useMemo, useState } from "react";
 
-// ✅ Use the Track type from UserAudioUpload (guaranteed to exist)
-import UserAudioUpload, { type Track } from "../components/UserAudioUpload";
-
-// ✅ Import components using relative paths (avoids @ alias problems)
-import AudioPlayer from "../components/AudioPlayer";
-import DailyPlanner from "../components/DailyPlanner";
+import AudioPlayer from "@/components/AudioPlayer";
+import DailyPlanner from "@/components/DailyPlanner";
+import UserAudioUpload, { type Track } from "@/components/UserAudioUpload";
 
 const DEFAULT_TRACKS: Track[] = [
   { id: "calm-start", title: "Calm Start", src: "/audio/calm-start.mp3", durationHint: "2–3 min" },
