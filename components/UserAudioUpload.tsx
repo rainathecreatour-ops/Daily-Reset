@@ -3,72 +3,72 @@
 import React, { useEffect, useMemo, useState } from "react";
 import type { Track } from "./AudioPlayer";
 
-export type Track = {
-  id: string;
-  title: string;
-  src: string;
-  durationHint?: string;
+const LS_KEY = "dailyreset_user_track";
+const MAX_BYTES = 2_000_000; // ~2MB safe limit for localStorage
+
+type Stored = {
+  name: string;
+  dataUrl: string;
 };
 
-
-
-const LS_KEY = "dailyreset_user_track";
-const MAX_BYTES = 2_000_000; // ~2MB (safe-ish for localStorage after base64)
-
-type Stored = { name: string; dataUrl: string };
-
 export default function UserAudioUpload({
-  onAddTrack
+  onAddTrack,
 }: {
   onAddTrack: (t: Track) => void;
 }) {
   const [stored, setStored] = useState<Stored | null>(null);
   const [loading, setLoading] = useState(false);
-  const [msg, setMsg] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
 
+  // Load saved audio on mount
   useEffect(() => {
+    if (typeof window === "undefined") return;
+
     try {
       const raw = localStorage.getItem(LS_KEY);
       if (!raw) return;
+
       const parsed = JSON.parse(raw) as Stored;
       if (parsed?.dataUrl) setStored(parsed);
     } catch {
-      // ignore
+      // ignore bad data
     }
   }, []);
 
+  // Convert stored audio to Track
   const track: Track | null = useMemo(() => {
     if (!stored) return null;
+
     return {
       id: "user-upload",
       title: `Your audio: ${stored.name}`,
       src: stored.dataUrl,
-      durationHint: "your file"
+      durationHint: "your file",
     };
   }, [stored]);
 
+  // Send track to parent when it changes
   useEffect(() => {
     if (track) onAddTrack(track);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [track?.src]);
 
-  async function onPick(file: File | null) {
-    setMsg(null);
+  function onPick(file: File | null) {
+    setMessage(null);
     if (!file) return;
 
-    // hard limit for localStorage
+    // Too big for localStorage → play only (temporary)
     if (file.size > MAX_BYTES) {
-      setMsg(
-        `That file is too big to save in localStorage. Keep it under ~2MB, or use the “server upload” option later.`
+      setMessage(
+        "File too large to save. It will play now but won’t persist after refresh."
       );
 
-      // Fallback: still let them PLAY it (not persistent)
       const tempUrl = URL.createObjectURL(file);
       onAddTrack({
         id: "user-upload-temp",
         title: `Your audio (temp): ${file.name}`,
         src: tempUrl,
-        durationHint: "temp"
+        durationHint: "temp",
       });
       return;
     }
@@ -79,13 +79,13 @@ export default function UserAudioUpload({
     reader.onload = () => {
       try {
         const dataUrl = String(reader.result || "");
-        const next = { name: file.name, dataUrl };
+        const next: Stored = { name: file.name, dataUrl };
 
-        localStorage.setItem(LS_KEY, JSON.stringify(next)); // can throw
+        localStorage.setItem(LS_KEY, JSON.stringify(next));
         setStored(next);
-        setMsg("Saved on this device ✅");
-      } catch (e) {
-        setMsg("Could not save (storage limit). Try a smaller MP3 under ~2MB.");
+        setMessage("Saved on this device ✅");
+      } catch {
+        setMessage("Could not save audio. Try a smaller file.");
       } finally {
         setLoading(false);
       }
@@ -93,7 +93,7 @@ export default function UserAudioUpload({
 
     reader.onerror = () => {
       setLoading(false);
-      setMsg("Could not read that file. Try another MP3.");
+      setMessage("Could not read the file.");
     };
 
     reader.readAsDataURL(file);
@@ -104,14 +104,14 @@ export default function UserAudioUpload({
       localStorage.removeItem(LS_KEY);
     } catch {}
     setStored(null);
-    setMsg("Cleared ✅");
+    setMessage("Cleared ✅");
   }
 
   return (
     <div className="mt-4 rounded-xl border border-[var(--border)] bg-white p-4">
       <div className="text-sm font-semibold">Upload your own MP3</div>
       <p className="mt-1 text-xs text-[var(--muted)]">
-        Saves only if under ~2MB (localStorage). Bigger files will still play, but won’t save.
+        Saved locally on this device (under ~2MB).
       </p>
 
       <div className="mt-3 flex items-center gap-3">
@@ -123,15 +123,19 @@ export default function UserAudioUpload({
           onChange={(e) => onPick(e.target.files?.[0] || null)}
           className="text-sm"
         />
+
         <button
           type="button"
           onClick={clear}
-          className="rounded-lg border border-[var(--border)] px-3 py-1.5 text-xs hover:bg-gray-50"
           disabled={!stored}
+          className="rounded-lg border border-[var(--border)] px-3 py-1.5 text-xs hover:bg-gray-50 disabled:opacity-50"
         >
           Clear
         </button>
-        {loading && <span className="text-xs text-[var(--muted)]">Loading…</span>}
+
+        {loading && (
+          <span className="text-xs text-[var(--muted)]">Loading…</span>
+        )}
       </div>
 
       {stored && (
@@ -140,7 +144,7 @@ export default function UserAudioUpload({
         </div>
       )}
 
-      {msg && <div className="mt-2 text-xs">{msg}</div>}
+      {message && <div className="mt-2 text-xs">{message}</div>}
     </div>
   );
 }
