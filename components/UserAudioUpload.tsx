@@ -93,28 +93,27 @@ export default function UserAudioUpload() {
         Plays immediately. Saves only if under ~2MB (localStorage).
       </p>
 
-      <div className="mt-3 flex items-center gap-3">
-        <input
-          id="user-audio"
-          name="user-audio"
-          type="file"
-          accept="audio/*"
-          onChange={(e) => onPick(e.target.files?.[0] || null)}
-          className="text-sm"
-        />
+     <div className="mt-3 flex flex-wrap items-center gap-3">
+  <input
+    id="user-audio"
+    name="user-audio"
+    type="file"
+    accept="audio/*"
+    onChange={(e) => onPick(e.target.files?.[0] || null)}
+    className="w-full text-sm sm:w-auto"
+  />
 
-        <button
-          type="button"
-          onClick={clear}
-          className="rounded-lg border border-[var(--border)] px-3 py-1.5 text-xs hover:bg-gray-50"
-        >
-          Clear
-        </button>
+  <button
+    type="button"
+    onClick={clear}
+    disabled={!stored}
+    className="shrink-0 rounded-lg border border-[var(--border)] px-3 py-1.5 text-xs hover:bg-gray-50 disabled:opacity-50"
+  >
+    Clear
+  </button>
 
-        {loading && (
-          <span className="text-xs text-[var(--muted)]">Loading…</span>
-        )}
-      </div>
+  {loading && <span className="text-xs text-[var(--muted)]">Loading…</span>}
+</div>
 
       {playSrc && (
         <div className="mt-4">
@@ -131,3 +130,5 @@ export default function UserAudioUpload() {
     </div>
   );
 }
+className="shrink-0 rounded-lg border border-[var(--border)] px-3 py-1.5 text-xs hover:bg-gray-50 disabled:opacity-50"
+
