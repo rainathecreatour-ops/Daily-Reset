@@ -1,3 +1,5 @@
+import JournalWithEntries from "../components/JournalWithEntries";
+
 "use client";
 
 import UserAudioUpload from "../components/UserAudioUpload";
