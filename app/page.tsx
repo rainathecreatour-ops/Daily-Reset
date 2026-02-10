@@ -1,31 +1,80 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import UserAudioUpload from "../components/UserAudioUpload";
 import JournalWithEntries from "../components/JournalWithEntries";
 
 const BUILT_IN = [
-  { title: "Calm Grounding", src: "/audio/calm-grounding.mp3" },
+  { title: "Calm Start", src: "/audio/calm-start.mp3" },
+  { title: "Gentle Focus", src: "/audio/gentle-focus.mp3" },
+  { title: "Soft Motivation", src: "/audio/soft-motivation.mp3" },
 ];
 
+const BG_KEY = "dailyreset_bg";
+
+const BG_OPTIONS = [
+  { name: "Soft White", value: "#f8fafc" },
+  { name: "Warm Cream", value: "#fff7ed" },
+  { name: "Pale Blush", value: "#fff1f2" },
+  { name: "Light Lavender", value: "#f5f3ff" },
+  { name: "Soft Mint", value: "#ecfdf5" },
+  { name: "Cool Gray", value: "#f3f4f6" },
+];
 
 export default function Page() {
+  const [bg, setBg] = useState<string>(BG_OPTIONS[0].value);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(BG_KEY);
+      if (saved) setBg(saved);
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    document.body.style.background = bg;
+    try {
+      localStorage.setItem(BG_KEY, bg);
+    } catch {}
+  }, [bg]);
+
   return (
-    <main className="mx-auto max-w-5xl px-4 py-10">
-      <header className="mb-8">
-        <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-white px-4 py-2 text-sm">
-          <span className="font-semibold">Daily Reset</span>
-          <span className="text-[var(--muted)]">Audio + Journal</span>
+    <main className="mx-auto max-w-6xl px-4 py-10">
+      <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-white px-4 py-2 text-sm">
+            <span className="font-semibold">Daily Reset</span>
+            <span className="text-[var(--muted)]">Audio + Journal</span>
+          </div>
+
+          <h1 className="mt-4 text-3xl font-semibold tracking-tight">
+            Press play. Write one page.
+          </h1>
+          <p className="mt-2 max-w-2xl text-[var(--muted)]">
+            Your entries and background preference save on this device.
+          </p>
         </div>
 
-        <h1 className="mt-4 text-3xl font-semibold tracking-tight">
-          Start your day calmly.
-        </h1>
-        <p className="mt-2 max-w-2xl text-[var(--muted)]">
-          Press play, write one page, and move forward with clarity.
-        </p>
+        {/* Background picker */}
+        <div className="rounded-2xl border border-[var(--border)] bg-white p-4 shadow-sm">
+          <div className="text-sm font-semibold">Background</div>
+          <select
+            value={bg}
+            onChange={(e) => setBg(e.target.value)}
+            className="mt-2 w-full rounded-lg border border-[var(--border)] bg-white px-3 py-2 text-sm"
+          >
+            {BG_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.name}
+              </option>
+            ))}
+          </select>
+        </div>
       </header>
 
-      <section className="grid gap-6 lg:grid-cols-2">
+      {/* Make Journal bigger: 3 columns, Journal spans 2 */}
+      <section className="grid gap-6 lg:grid-cols-3">
+        {/* Audio column (1/3) */}
         <div className="rounded-2xl border border-[var(--border)] bg-white p-6 shadow-sm space-y-6">
           <div>
             <h2 className="text-lg font-semibold">Built-in audio</h2>
@@ -48,7 +97,8 @@ export default function Page() {
           <UserAudioUpload />
         </div>
 
-        <div className="rounded-2xl border border-[var(--border)] bg-white p-6 shadow-sm">
+        {/* Journal column (2/3) */}
+        <div className="lg:col-span-2 rounded-2xl border border-[var(--border)] bg-white p-6 shadow-sm">
           <JournalWithEntries />
         </div>
       </section>
