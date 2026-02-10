@@ -4,71 +4,61 @@ import React, { useEffect, useMemo, useState } from "react";
 
 type Entry = {
   id: string;
+  createdAt: number; // unix ms
   text: string;
-  createdAt: number; // Date.now()
 };
 
 const LS_KEY = "dailyreset_journal_entries";
 
 function formatDateTime(ts: number) {
-  const d = new Date(ts);
-  return d.toLocaleString(undefined, {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  });
+  try {
+    return new Date(ts).toLocaleString(undefined, {
+      weekday: "short",
+      month: "short",
+      day: "2-digit",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    });
+  } catch {
+    return String(ts);
+  }
 }
 
 export default function JournalWithEntries() {
   const [text, setText] = useState("");
   const [entries, setEntries] = useState<Entry[]>([]);
-  const [now, setNow] = useState(Date.now());
 
-  // Live clock (updates time display)
+  // Load entries
   useEffect(() => {
-    const t = setInterval(() => setNow(Date.now()), 30_000); // every 30s
-    return () => clearInterval(t);
-  }, []);
-
-  // Load saved entries
-  useEffect(() => {
-    if (typeof window === "undefined") return;
     try {
       const raw = localStorage.getItem(LS_KEY);
       if (!raw) return;
       const parsed = JSON.parse(raw) as Entry[];
       if (Array.isArray(parsed)) setEntries(parsed);
-    } catch {
-      // ignore
-    }
+    } catch {}
   }, []);
 
-  // Persist entries
+  // Save entries
   useEffect(() => {
-    if (typeof window === "undefined") return;
     try {
       localStorage.setItem(LS_KEY, JSON.stringify(entries));
-    } catch {
-      // storage full or blocked
-    }
+    } catch {}
   }, [entries]);
 
-  const headerDate = useMemo(() => formatDateTime(now), [now]);
+  const nowLabel = useMemo(() => formatDateTime(Date.now()), []);
 
-  function addEntry() {
+  function saveEntry() {
     const trimmed = text.trim();
     if (!trimmed) return;
 
-    const e: Entry = {
-      id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
-      text: trimmed,
+    const next: Entry = {
+      id: crypto?.randomUUID?.() ? crypto.randomUUID() : String(Date.now()),
       createdAt: Date.now(),
+      text: trimmed,
     };
 
-    setEntries((prev) => [e, ...prev]);
+    setEntries((prev) => [next, ...prev]);
     setText("");
   }
 
@@ -78,54 +68,51 @@ export default function JournalWithEntries() {
 
   function clearAll() {
     setEntries([]);
+    setText("");
     try {
       localStorage.removeItem(LS_KEY);
     } catch {}
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-start justify-between gap-3">
+    <div>
+      <div className="mb-4 flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-lg font-semibold">Journal</h2>
-          <p className="mt-1 text-xs text-[var(--muted)]">
-            {headerDate} • Entries save on this device
+          <h2 className="text-xl font-semibold">Journal</h2>
+          <p className="text-xs text-[var(--muted)] mt-1">
+            {nowLabel} • Entries save on this device
           </p>
         </div>
 
         <button
           type="button"
           onClick={clearAll}
-          className="rounded-lg border border-[var(--border)] px-3 py-1.5 text-xs hover:bg-gray-50"
-          disabled={entries.length === 0}
+          className="rounded-lg border border-[var(--border)] px-3 py-2 text-xs hover:bg-gray-50"
         >
           Clear all
         </button>
       </div>
 
-      <div className="rounded-xl border border-[var(--border)] bg-white p-4">
-        <label htmlFor="journalText" className="text-sm font-medium">
-          New entry
-        </label>
+      {/* Bigger writing area */}
+      <div className="rounded-2xl border border-[var(--border)] p-5">
+        <div className="text-sm font-semibold">New entry</div>
 
         <textarea
-          id="journalText"
-          name="journalText"
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="Write one page…"
-          className="mt-2 h-40 w-full resize-none rounded-xl border border-[var(--border)] px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-black/5"
+          placeholder="Write one page..."
+          className="mt-3 w-full min-h-[260px] rounded-xl border border-[var(--border)] p-4 text-sm outline-none focus:ring-2 focus:ring-black/10"
         />
 
-        <div className="mt-3 flex items-center justify-between gap-3">
+        <div className="mt-3 flex items-center justify-between">
           <div className="text-xs text-[var(--muted)]">
             Tip: press “Save entry” to lock it in.
           </div>
 
           <button
             type="button"
-            onClick={addEntry}
-            className="rounded-xl border border-[var(--border)] bg-black px-4 py-2 text-sm text-white hover:opacity-90 disabled:opacity-60"
+            onClick={saveEntry}
+            className="rounded-xl bg-black px-4 py-2 text-sm text-white hover:opacity-90 disabled:opacity-50"
             disabled={!text.trim()}
           >
             Save entry
@@ -133,31 +120,32 @@ export default function JournalWithEntries() {
         </div>
       </div>
 
-      <div className="space-y-3">
+      {/* Entry list */}
+      <div className="mt-6 space-y-4">
         {entries.length === 0 ? (
-          <div className="rounded-xl border border-[var(--border)] bg-white p-4 text-sm text-[var(--muted)]">
+          <div className="rounded-xl border border-[var(--border)] p-4 text-sm text-[var(--muted)]">
             No entries yet. Write your first one above.
           </div>
         ) : (
           entries.map((e) => (
-            <div
-              key={e.id}
-              className="rounded-xl border border-[var(--border)] bg-white p-4"
-            >
-              <div className="flex items-start justify-between gap-3">
+            <div key={e.id} className="rounded-2xl border border-[var(--border)] p-5">
+              <div className="flex items-start justify-between gap-4">
                 <div className="text-xs text-[var(--muted)]">
                   {formatDateTime(e.createdAt)}
                 </div>
+
                 <button
                   type="button"
                   onClick={() => deleteEntry(e.id)}
-                  className="text-xs underline opacity-70 hover:opacity-100"
+                  className="text-xs underline text-[var(--muted)] hover:text-black"
                 >
                   Delete
                 </button>
               </div>
 
-              <div className="mt-2 whitespace-pre-wrap text-sm">{e.text}</div>
+              <div className="mt-3 whitespace-pre-wrap text-sm leading-6">
+                {e.text}
+              </div>
             </div>
           ))
         )}
