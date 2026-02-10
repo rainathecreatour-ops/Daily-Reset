@@ -1,8 +1,7 @@
-import JournalWithEntries from "../components/JournalWithEntries";
-
 "use client";
 
 import UserAudioUpload from "../components/UserAudioUpload";
+import JournalWithEntries from "../components/JournalWithEntries";
 
 const BUILT_IN = [
   { title: "Calm Start", src: "/audio/calm-start.mp3" },
@@ -16,7 +15,7 @@ export default function Page() {
       <header className="mb-8">
         <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-white px-4 py-2 text-sm">
           <span className="font-semibold">Daily Reset</span>
-          <span className="text-[var(--muted)]">Audio + One Page</span>
+          <span className="text-[var(--muted)]">Audio + Journal</span>
         </div>
 
         <h1 className="mt-4 text-3xl font-semibold tracking-tight">
@@ -28,7 +27,6 @@ export default function Page() {
       </header>
 
       <section className="grid gap-6 lg:grid-cols-2">
-        {/* LEFT: Audio */}
         <div className="rounded-2xl border border-[var(--border)] bg-white p-6 shadow-sm space-y-6">
           <div>
             <h2 className="text-lg font-semibold">Built-in audio</h2>
@@ -51,17 +49,8 @@ export default function Page() {
           <UserAudioUpload />
         </div>
 
-        {/* RIGHT: Journal (inline) */}
         <div className="rounded-2xl border border-[var(--border)] bg-white p-6 shadow-sm">
-          <h2 className="text-lg font-semibold">One Page Journal</h2>
-          <p className="mt-1 text-sm text-[var(--muted)]">
-            Write while you listen.
-          </p>
-
-          <textarea
-            placeholder="Start writing here…"
-            className="mt-4 w-full min-h-[320px] rounded-xl border border-[var(--border)] p-3 text-sm outline-none focus:ring-2 focus:ring-black/10"
-          />
+          <JournalWithEntries />
         </div>
       </section>
     </main>
