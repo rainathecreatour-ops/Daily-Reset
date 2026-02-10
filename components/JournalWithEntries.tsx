@@ -1,5 +1,3 @@
-return <div>JOURNAL COMPONENT LOADED ✅</div>;
-
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
