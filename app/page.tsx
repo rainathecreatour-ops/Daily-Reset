@@ -5,7 +5,7 @@ import UserAudioUpload from "../components/UserAudioUpload";
 import JournalWithEntries from "../components/JournalWithEntries";
 
 const BUILT_IN = [
-  { title: "Calm Start", src: "/audio/calm-start.mp3" },
+  { title: "Slow Drip", src: "/audio/slow-drip.mp3" },
   { title: "Money Overflow", src: "/audio/money-overflow.mp3" },
   { title: "Soft Motivation", src: "/audio/soft-motivation.mp3" },
 
