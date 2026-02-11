@@ -48,37 +48,20 @@ export default function Page() {
   }, [bg]);
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-10">
-      <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-white px-4 py-2 text-sm">
-            <span className="font-semibold">Daily Reset</span>
-            <span className="text-[var(--muted)]">Audio + Journal</span>
-          </div>
+    <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+  {BUILT_IN.map((t) => (
+    <div
+      key={t.src}
+      className="rounded-xl border border-[var(--border)] p-4 bg-white"
+    >
+      <div className="text-sm font-semibold">{t.title}</div>
+      <audio controls className="mt-2 w-full">
+        <source src={t.src} type="audio/mpeg" />
+      </audio>
+    </div>
+  ))}
+</div>
 
-          <h1 className="mt-4 text-3xl font-semibold tracking-tight">
-            Press play. Write one page.
-          </h1>
-          <p className="mt-2 max-w-2xl text-[var(--muted)]">
-            Your entries and background preference save on this device.
-          </p>
-        </div>
-
-        {/* Background picker */}
-        <div className="rounded-2xl border border-[var(--border)] bg-white p-4 shadow-sm">
-          <div className="text-sm font-semibold">Background</div>
-          <select
-            value={bg}
-            onChange={(e) => setBg(e.target.value)}
-            className="mt-2 w-full rounded-lg border border-[var(--border)] bg-white px-3 py-2 text-sm"
-          >
-            {BG_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.name}
-              </option>
-            ))}
-          </select>
-        </div>
       </header>
 
       {/* Make Journal bigger: 3 columns, Journal spans 2 */}
