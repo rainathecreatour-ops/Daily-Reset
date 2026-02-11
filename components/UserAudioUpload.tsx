@@ -104,13 +104,14 @@ export default function UserAudioUpload() {
   />
 
   <button
-    type="button"
-    onClick={clear}
-    disabled={!stored}
-    className="shrink-0 rounded-lg border border-[var(--border)] px-3 py-1.5 text-xs hover:bg-gray-50 disabled:opacity-50"
-  >
-    Clear
-  </button>
+  type="button"
+  onClick={clear}
+  disabled={!stored}
+  className="shrink-0 rounded-lg border border-[var(--border)] px-3 py-1.5 text-xs hover:bg-gray-50"
+>
+  Clear
+</button>
+
 
   {loading && <span className="text-xs text-[var(--muted)]">Loading…</span>}
 </div>
@@ -128,14 +129,6 @@ export default function UserAudioUpload() {
 
       {message && <div className="mt-2 text-xs">{message}</div>}
     </div>
-    <button
-  type="button"
-  onClick={clear}
-  disabled={!stored}
-  className="shrink-0 rounded-lg border border-[var(--border)] px-3 py-1.5 text-xs hover:bg-gray-50"
->
-  Clear
-</button>
 
   );
 }
