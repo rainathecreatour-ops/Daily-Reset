@@ -5,10 +5,17 @@ import UserAudioUpload from "../components/UserAudioUpload";
 import JournalWithEntries from "../components/JournalWithEntries";
 
 const BUILT_IN = [
-  { title: "Drifting Stars", src: "/audio/drifting-stars.mp3" },
+  { title: "Calm Start", src: "/audio/calm-start.mp3" },
   { title: "Gentle Focus", src: "/audio/gentle-focus.mp3" },
   { title: "Soft Motivation", src: "/audio/soft-motivation.mp3" },
+
   { title: "Calm Grounding", src: "/audio/calm-grounding.mp3" },
+  { title: "LoFi Reset", src: "/audio/lofi-reset.mp3" },
+  { title: "Afrobeat Reset", src: "/audio/afrobeat-reset.mp3" },
+
+  { title: "Soul Reset", src: "/audio/soul-reset.mp3" },
+  { title: "Classical Reset", src: "/audio/classical-reset.mp3" },
+  { title: "Soft Rock Reset", src: "/audio/soft-rock-reset.mp3" },
 ];
 
 
