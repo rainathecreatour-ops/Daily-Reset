@@ -6,7 +6,7 @@ import JournalWithEntries from "../components/JournalWithEntries";
 
 const BUILT_IN = [
   { title: "Calm Start", src: "/audio/calm-start.mp3" },
-  { title: "Gentle Focus", src: "/audio/gentle-focus.mp3" },
+  { title: "Money Overflow", src: "/audio/money-overflow.mp3" },
   { title: "Soft Motivation", src: "/audio/soft-motivation.mp3" },
 
   { title: "Calm Grounding", src: "/audio/calm-grounding.mp3" },
